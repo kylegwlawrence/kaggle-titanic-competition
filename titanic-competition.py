@@ -1,5 +1,6 @@
 
 # %% Imports
+import seaborn as sn
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -39,7 +40,7 @@ train_df.describe()
 # next - split into categorical and numerical and see how each correlates with survival
 #%%
 categoricals = ['Sex','Pclass','Embarked']
-numericals = ['Age','SibSp','Parch','Fare']
+numericals = ['Age','SibSp','Parch','Fare','Survived']
 # to check correlation of categoricals, plot frequency of survival (or percent of total that survived?) on bar graph
 #%% print a bar plot of survival rates for each category 
 def cat_plots(cat):
@@ -57,6 +58,12 @@ def cat_plots(cat):
 
 for cat in categoricals:
     cat_plots(cat)
+
+#%%
+corrMatrix = train_df[numericals].corr()
+plt.figure(figsize=(5, 5))
+sn.heatmap(corrMatrix, annot=True, linewidths=1)
+plt.show()
 
 
 
