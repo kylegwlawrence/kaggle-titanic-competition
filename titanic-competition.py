@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import os
 import sys
+from sklearn.linear_model import LogisticRegression
 
 #get script directory
 here = os.path.dirname(os.path.abspath(__file__))
@@ -16,20 +17,6 @@ train_df = pd.read_csv('train.csv')
 # %% inspect passengerid column
 train_df.info()
 train_df.describe()
-
-# %% notes
-# -the Kaggle data preview does a good job of describing each column
-
-# -survived is the output (y)
-# - passengerid is an index and doesn't matter for testing, only submission. same with name and ticket
-# -cabin is missing the most values. Don't test specific cabin yet, just test p class
-# -age is missing some. not sure how to impute this. try imputing average age first, then average or mean age by class/sex or combo
-# -should age be bucketed as a categorical variable? Try different methods
-# -SibSp - Number of siblings/spouses aboard
-# -Parch - number of parents/children aboard
-# -Fare might correlate with Class
-# -Embarked has values S, C, Q or nan
-
 # next - split into categorical and numerical and see how each correlates with survival
 #%%
 categoricals = ['Sex','Pclass','Embarked']
@@ -92,7 +79,7 @@ exploration_results = """
     \n
     Investigating correlation amongst numericals columns, Fare is the most strongly correlated numerical category with Survived. This means the more a passenger paid, the more likely they were to survive. Parch is also positively correlted with survival although weakly. Age and SibSp are both weakly negatively correlated with Survived.
     \n
-    Multicollinearity: there is medium positive correlation between Parch and SibSp. Might make more sense to make an indicator out of this such as is alone, has a child, has a sibling, is with a party (>2 ppl)
+    Multicollinearity: there is medium positive correlation between Parch and SibSp. Might make more sense to make an indicator out of this such as is alone, has a child, has a sibling, is with a party (>2 ppl). Another possible feature is to split binary cols for num people in party - 1, 2, 3 or more
     \n
     Histograms of different age bins across survival rate shows that younger passengers are more likely to survive than older passengers in general. The highest survival rate when splitting age across 8 bins is 0-10 years old (~60%) and the lowest survival rate is the last bin, 70 to 80 years old (~20%)
 """
@@ -167,4 +154,17 @@ cat_plots('IsWithParty')
 
 train_df['PclassxlogFare'] = train_df['Pclass']*train_df['logFare']
 hist_Pclass_times_log_fare = train_df[['PclassxlogFare']].hist(bins=25)
+# %% one hot encode the categorical variables
+one_hot_cats = ['Sex','Embarked','Pclass']
+train_df = pd.get_dummies(train_df, columns=one_hot_cats, prefix=one_hot_cats)
+# drop some redundant columns. These will be the "base" vars = 1. Also with isalone and iswithparty, base assumption is they are in party of 2
+train_df.drop(labels=['Sex_female','Embarked_S','Pclass_1'],axis=1,inplace=True)
+
+# %% model training
+predictor_vars = train_df[['Age','IsAlone','IsWithParty','PclassxlogFare','Sex_male','Embarked_C','Embarked_Q','Pclass_2','Pclass_3']]
+
+response_var = train_df['Survived']
+
+#1. logistic regression
+
 # %%
