@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import os
 import sys
-start_time = time.time()
 
 #get script directory
 here = os.path.dirname(os.path.abspath(__file__))
@@ -53,7 +52,7 @@ def cat_plots(cat):
 for cat in categoricals:
     cat_plots(cat)
 
-#%%
+#%% print a corerlation matrix to show relationship between survival and predictor variables and multicollinearity
 corrMatrix = train_df[numericals].corr()
 plt.figure(figsize=(5, 5))
 sn.heatmap(corrMatrix, annot=True, linewidths=1)
@@ -80,7 +79,7 @@ def histogram_age(cut_num_bins):
     train_df.drop(['bin_age_{}'.format(cut_num_bins)],axis=1,inplace=True)
 
 # look at histograms with different bin sizes
-for n in range(3,9):
+for n in range(8,9):
     histogram_age(n)
 
 #%%
@@ -93,10 +92,23 @@ exploration_results = """
     \n
     Investigating correlation amongst numericals columns, Fare is the most strongly correlated numerical category with Survived. This means the more a passenger paid, the more likely they were to survive. Parch is also positively correlted with survival although weakly. Age and SibSp are both weakly negatively correlated with Survived.
     \n
+    Multicollinearity: there is medium positive correlation between Parch and SibSp. Might make more sense to make an indicator out of this such as is alone, has a child, has a sibling, is with a party (>2 ppl)
+    \n
     Histograms of different age bins across survival rate shows that younger passengers are more likely to survive than older passengers in general. The highest survival rate when splitting age across 8 bins is 0-10 years old (~60%) and the lowest survival rate is the last bin, 70 to 80 years old (~20%)
 """
+print(exploration_results)
 
+# Data preprocessing
 
+#%%addres missing values
+# -drop cabin - majority are missing
+train_df.drop(['Cabin'],axis=1,inplace=True)
 
+# %%-missing in Age - impute average age. use .item() to convert from shape(1,) to integer
+mean_age = train_df[~train_df['Age'].isna()][['Age']].mean().item()
+train_df['Age'].fillna(value=mean_age,inplace=True)
+
+# %% Impute C for missing embarked values snice majority came from C. there are only two missing values
+train_df['Embarked'].fillna(value='C', inplace=True)
 
 # %%
