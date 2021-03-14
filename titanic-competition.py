@@ -138,3 +138,33 @@ train_df['logFare'] = np.log(train_df['Fare'])
 hist_fare = train_df[['Fare']].hist(bins=25)
 hist_log_fare = train_df[['logFare']].hist(bins=25)
 
+# feature engineering  -create some features from existing features
+# 1. is_alone (Parch and Sibsp = 0)
+# 2. is_party (sum of Parch and Sibsp>1)
+# 3. class X logFare = will put more weight on higher prices in classes 2 and 3
+
+#%% is alone
+def is_alone(Parch, SibSp):
+    if Parch+SibSp==0:
+        return 1
+    else:
+        return 0
+train_df['IsAlone'] = train_df.apply(
+    lambda x: is_alone(
+        x['Parch'], x['SibSp']), axis=1)
+cat_plots('IsAlone')
+
+#%% is with party
+def is_with_party(Parch, SibSp):
+    if Parch+SibSp > 1:
+        return 1
+    else:
+        return 0
+train_df['IsWithParty'] = train_df.apply(
+    lambda x: is_with_party(
+        x['Parch'], x['SibSp']), axis=1)
+cat_plots('IsWithParty')
+
+train_df['PclassxlogFare'] = train_df['Pclass']*train_df['logFare']
+hist_Pclass_times_log_fare = train_df[['PclassxlogFare']].hist(bins=25)
+# %%
