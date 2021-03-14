@@ -111,4 +111,30 @@ train_df['Age'].fillna(value=mean_age,inplace=True)
 # %% Impute C for missing embarked values snice majority came from C. there are only two missing values
 train_df['Embarked'].fillna(value='C', inplace=True)
 
-# %%
+# %%missing values for fare - use average fare by class
+fare_mean_by_class = train_df[train_df['Fare'] >0][['Fare', 'Pclass']
+    ].groupby(['Pclass']).agg({'Fare': 'mean'})
+dict_fare_mean_by_class = fare_mean_by_class.to_dict()['Fare']
+#%% add mean by class to zero fares
+def impute_mean_class_fare(Pclass, Fare):
+    if Fare==0:
+        if Pclass==1:
+            return dict_fare_mean_by_class[1]
+        elif Pclass==2:
+            return dict_fare_mean_by_class[2]
+        elif Pclass == 3:
+            return dict_fare_mean_by_class[3]
+    elif Fare!=0:
+        return Fare
+
+train_df['Fare'] = train_df.apply(
+    lambda x: impute_mean_class_fare(
+        x['Pclass']
+        , x['Fare']), axis=1)
+# %% data transformation - Fare
+train_df['logFare'] = np.log(train_df['Fare'])
+
+# %%compare Fare and logFare to explain reason for transformation
+hist_fare = train_df[['Fare']].hist(bins=25)
+hist_log_fare = train_df[['logFare']].hist(bins=25)
+
