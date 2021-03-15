@@ -183,6 +183,9 @@ acc_log = round(logreg.score(X_train, Y_train) * 100, 2)
 print('Logistic regression score = {}'.format(acc_log))
 confusion_matrix(y_test, Y_pred)
 
+
+
+#----------------code below is not mine --------------------#
 #%% 2. support vector machine
 svc = SVC()
 svc.fit(X_train, Y_train)
@@ -257,7 +260,6 @@ models = pd.DataFrame({'Model': ['Support Vector Machines', 'KNN', 'Logistic Reg
 models.sort_values(by='Score', ascending=False, ignore_index=True)
 
 #%% Create a list which contains classifiers
-
 classifiers = []
 classifiers.append(LogisticRegression())
 classifiers.append(SVC())
@@ -270,7 +272,6 @@ classifiers.append(DecisionTreeClassifier())
 classifiers.append(RandomForestClassifier())
 
 len(classifiers)
-
 # %%Create a list which contains cross validation results for each classifier
 cv_results = []
 for classifier in classifiers:
